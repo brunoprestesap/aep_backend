@@ -1,0 +1,666 @@
+// ============================================================
+// AEP SaaS Platform – Prisma Schema
+// PostgreSQL · Multi-tenant · NR-01 / NR-17 compliant
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  admin
+  consultant
+  hr
+  manager
+  worker
+
+  @@map("user_role")
+}
+
+enum AssessmentStatus {
+  draft
+  in_progress
+  completed
+  archived
+
+  @@map("assessment_status")
+}
+
+enum HazardCategory {
+  ergonomic
+  psychosocial
+  physical
+  chemical
+  biological
+  mechanical
+
+  @@map("hazard_category")
+}
+
+enum RiskSeverity {
+  low       // 1
+  moderate  // 2
+  high      // 3
+  critical  // 4
+
+  @@map("risk_severity")
+}
+
+enum RiskProbability {
+  unlikely       // 1
+  possible       // 2
+  likely         // 3
+  almost_certain // 4
+
+  @@map("risk_probability")
+}
+
+enum RiskLevel {
+  low
+  medium
+  high
+  critical
+
+  @@map("risk_level")
+}
+
+enum ActionItemStatus {
+  pending
+  in_progress
+  completed
+  overdue
+  cancelled
+
+  @@map("action_item_status")
+}
+
+enum ReportType {
+  aep
+  risk_inventory
+  action_plan
+
+  @@map("report_type")
+}
+
+enum ReportFormat {
+  pdf
+  docx
+  xlsx
+
+  @@map("report_format")
+}
+
+enum ReportStatus {
+  queued
+  processing
+  completed
+  failed
+
+  @@map("report_status")
+}
+
+enum FileContext {
+  evidence
+  report
+  action_item
+
+  @@map("file_context")
+}
+
+// ============================================================
+// MULTI-TENANCY
+// ============================================================
+
+model Tenant {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  isActive  Boolean  @default(true) @map("is_active")
+  plan      String   @default("free")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  organizations Organization[]
+  assessments   Assessment[]
+  surveys       Survey[]
+  riskMatrices  RiskMatrix[]
+  hazardCatalog HazardCatalog[]
+  auditLogs     AuditLog[]
+
+  @@map("tenants")
+}
+
+// ============================================================
+// AUTH / USERS
+// ============================================================
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  name         String
+  email        String
+  passwordHash String    @map("password_hash")
+  role         UserRole  @default(consultant)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  assessments Assessment[] @relation("responsible")
+  auditLogs   AuditLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([tenantId, role])
+  @@map("users")
+}
+
+// ============================================================
+// ORGANIZATIONAL STRUCTURE
+// ============================================================
+
+model Organization {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  name          String
+  cnpj          String?
+  industry      String?
+  address       String?
+  employeeCount Int?     @map("employee_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  units       Unit[]
+  assessments Assessment[]
+
+  @@index([tenantId])
+  @@map("organizations")
+}
+
+model Unit {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  name           String
+  address        String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  departments  Department[]
+
+  @@index([tenantId, organizationId])
+  @@map("units")
+}
+
+model Department {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  unitId      String   @map("unit_id") @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  unit     Unit      @relation(fields: [unitId], references: [id])
+  jobRoles JobRole[]
+
+  @@index([tenantId, unitId])
+  @@map("departments")
+}
+
+model JobRole {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  departmentId String   @map("department_id") @db.Uuid
+  name         String
+  description  String?
+  workerCount  Int      @default(0) @map("worker_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  department Department @relation(fields: [departmentId], references: [id])
+  workers    Worker[]
+  activities Activity[]
+  surveys    Survey[]
+
+  @@index([tenantId, departmentId])
+  @@map("job_roles")
+}
+
+model Worker {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  jobRoleId    String   @map("job_role_id") @db.Uuid
+  name         String
+  email        String?
+  registration String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  jobRole JobRole @relation(fields: [jobRoleId], references: [id])
+
+  @@index([tenantId, jobRoleId])
+  @@map("workers")
+}
+
+// ============================================================
+// ASSESSMENTS (AEP)
+// ============================================================
+
+model Assessment {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @map("tenant_id") @db.Uuid
+  organizationId String           @map("organization_id") @db.Uuid
+  responsibleId  String?          @map("responsible_id") @db.Uuid
+  title          String
+  scope          String?
+  methodology    String?
+  status         AssessmentStatus @default(draft)
+  startedAt      DateTime?        @map("started_at")
+  completedAt    DateTime?        @map("completed_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  deletedAt      DateTime?        @map("deleted_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  responsible  User?        @relation("responsible", fields: [responsibleId], references: [id])
+
+  activities   Activity[]
+  observations Observation[]
+  interviews   Interview[]
+  hazards      Hazard[]
+  riskAssessments RiskAssessment[]
+  actionPlans  ActionPlan[]
+  reports      Report[]
+  surveys      Survey[]
+
+  @@index([tenantId, organizationId])
+  @@index([tenantId, status])
+  @@map("assessments")
+}
+
+model Activity {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  assessmentId String   @map("assessment_id") @db.Uuid
+  jobRoleId    String?  @map("job_role_id") @db.Uuid
+  name         String
+  description  String?
+  workerCount  Int?     @map("worker_count")
+  workShift    String?  @map("work_shift")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  assessment   Assessment    @relation(fields: [assessmentId], references: [id])
+  jobRole      JobRole?      @relation(fields: [jobRoleId], references: [id])
+  observations Observation[]
+  hazards      Hazard[]
+
+  @@index([tenantId, assessmentId])
+  @@map("activities")
+}
+
+// ============================================================
+// FIELD DATA COLLECTION
+// ============================================================
+
+model Observation {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  assessmentId       String   @map("assessment_id") @db.Uuid
+  activityId         String?  @map("activity_id") @db.Uuid
+  observedBy         String   @map("observed_by") @db.Uuid
+  observedAt         DateTime @map("observed_at")
+  description        String
+  workConditions     String?  @map("work_conditions")
+  workerCountPresent Int?     @map("worker_count_present")
+  location           String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  assessment Assessment  @relation(fields: [assessmentId], references: [id])
+  activity   Activity?   @relation(fields: [activityId], references: [id])
+
+  @@index([tenantId, assessmentId])
+  @@index([tenantId, activityId])
+  @@map("observations")
+}
+
+model Interview {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  assessmentId     String   @map("assessment_id") @db.Uuid
+  intervieweeName  String   @map("interviewee_name")
+  intervieweeRole  String?  @map("interviewee_role")
+  conductedBy      String   @map("conducted_by") @db.Uuid
+  conductedAt      DateTime @map("conducted_at")
+  answers          Json?
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id])
+
+  @@index([tenantId, assessmentId])
+  @@map("interviews")
+}
+
+// ============================================================
+// HAZARDS
+// ============================================================
+
+model HazardCatalog {
+  id                  String        @id @default(uuid()) @db.Uuid
+  tenantId            String?       @map("tenant_id") @db.Uuid
+  category            HazardCategory
+  name                String
+  description         String?
+  possibleConsequences String?      @map("possible_consequences")
+  suggestedControls   String?       @map("suggested_controls")
+  isGlobal            Boolean       @default(false) @map("is_global")
+  createdAt           DateTime      @default(now()) @map("created_at")
+
+  tenant  Tenant?  @relation(fields: [tenantId], references: [id])
+  hazards Hazard[]
+
+  @@index([tenantId])
+  @@index([category])
+  @@map("hazard_catalog")
+}
+
+model Hazard {
+  id                  String        @id @default(uuid()) @db.Uuid
+  tenantId            String        @map("tenant_id") @db.Uuid
+  assessmentId        String        @map("assessment_id") @db.Uuid
+  activityId          String?       @map("activity_id") @db.Uuid
+  catalogId           String?       @map("catalog_id") @db.Uuid
+  name                String
+  description         String?
+  category            HazardCategory
+  exposureDescription String?       @map("exposure_description")
+  exposedWorkerCount  Int?          @map("exposed_worker_count")
+  existingControls    String?       @map("existing_controls")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  assessment      Assessment      @relation(fields: [assessmentId], references: [id])
+  activity        Activity?       @relation(fields: [activityId], references: [id])
+  catalog         HazardCatalog?  @relation(fields: [catalogId], references: [id])
+  riskAssessments RiskAssessment[]
+
+  @@index([tenantId, assessmentId])
+  @@index([tenantId, category])
+  @@map("hazards")
+}
+
+// ============================================================
+// RISK ENGINE
+// ============================================================
+
+model RiskMatrix {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  name      String
+  version   String   @default("1.0")
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tenant             Tenant             @relation(fields: [tenantId], references: [id])
+  severityLevels     SeverityLevel[]
+  probabilityLevels  ProbabilityLevel[]
+  riskClassifications RiskClassification[]
+
+  @@index([tenantId])
+  @@map("risk_matrices")
+}
+
+model SeverityLevel {
+  id           String     @id @default(uuid()) @db.Uuid
+  riskMatrixId String     @map("risk_matrix_id") @db.Uuid
+  code         String
+  name         String
+  weight       Int
+  description  String?
+
+  riskMatrix RiskMatrix @relation(fields: [riskMatrixId], references: [id])
+
+  @@unique([riskMatrixId, code])
+  @@map("severity_levels")
+}
+
+model ProbabilityLevel {
+  id           String     @id @default(uuid()) @db.Uuid
+  riskMatrixId String     @map("risk_matrix_id") @db.Uuid
+  code         String
+  name         String
+  weight       Int
+  description  String?
+
+  riskMatrix RiskMatrix @relation(fields: [riskMatrixId], references: [id])
+
+  @@unique([riskMatrixId, code])
+  @@map("probability_levels")
+}
+
+model RiskClassification {
+  id              String     @id @default(uuid()) @db.Uuid
+  riskMatrixId    String     @map("risk_matrix_id") @db.Uuid
+  severityCode    String     @map("severity_code")
+  probabilityCode String     @map("probability_code")
+  result          RiskLevel
+
+  riskMatrix RiskMatrix @relation(fields: [riskMatrixId], references: [id])
+
+  @@unique([riskMatrixId, severityCode, probabilityCode])
+  @@map("risk_classifications")
+}
+
+model RiskAssessment {
+  id              String          @id @default(uuid()) @db.Uuid
+  tenantId        String          @map("tenant_id") @db.Uuid
+  assessmentId    String          @map("assessment_id") @db.Uuid
+  hazardId        String          @map("hazard_id") @db.Uuid
+  severity        RiskSeverity
+  probability     RiskProbability
+  riskScore       Int             @map("risk_score")
+  riskLevel       RiskLevel       @map("risk_level")
+  // Residual risk (after mitigation actions)
+  residualSeverity    RiskSeverity?    @map("residual_severity")
+  residualProbability RiskProbability? @map("residual_probability")
+  residualScore       Int?             @map("residual_score")
+  residualLevel       RiskLevel?       @map("residual_level")
+  justification   String?
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  assessment  Assessment   @relation(fields: [assessmentId], references: [id])
+  hazard      Hazard       @relation(fields: [hazardId], references: [id])
+  actionPlans ActionPlan[]
+
+  @@index([tenantId, assessmentId])
+  @@index([tenantId, hazardId])
+  @@index([tenantId, riskLevel])
+  @@map("risk_assessments")
+}
+
+// ============================================================
+// ACTION PLANS
+// ============================================================
+
+model ActionPlan {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  assessmentId     String   @map("assessment_id") @db.Uuid
+  riskAssessmentId String?  @map("risk_assessment_id") @db.Uuid
+  title            String
+  objective        String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  assessment     Assessment      @relation(fields: [assessmentId], references: [id])
+  riskAssessment RiskAssessment? @relation(fields: [riskAssessmentId], references: [id])
+  items          ActionItem[]
+
+  @@index([tenantId, assessmentId])
+  @@map("action_plans")
+}
+
+model ActionItem {
+  id                String           @id @default(uuid()) @db.Uuid
+  tenantId          String           @map("tenant_id") @db.Uuid
+  actionPlanId      String           @map("action_plan_id") @db.Uuid
+  action            String
+  responsibleName   String           @map("responsible_name")
+  dueDate           DateTime         @map("due_date") @db.Date
+  status            ActionItemStatus @default(pending)
+  successIndicators String?          @map("success_indicators")
+  completedAt       DateTime?        @map("completed_at")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  actionPlan ActionPlan  @relation(fields: [actionPlanId], references: [id])
+  files      FileRecord[]
+
+  @@index([tenantId, actionPlanId])
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@map("action_items")
+}
+
+// ============================================================
+// PSYCHOSOCIAL SURVEYS
+// ============================================================
+
+model Survey {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  assessmentId  String    @map("assessment_id") @db.Uuid
+  targetJobRoleId String? @map("target_job_role_id") @db.Uuid
+  title         String
+  description   String?
+  isAnonymous   Boolean   @default(true) @map("is_anonymous")
+  accessToken   String    @unique @map("access_token")
+  closesAt      DateTime? @map("closes_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  tenant    Tenant          @relation(fields: [tenantId], references: [id])
+  assessment Assessment     @relation(fields: [assessmentId], references: [id])
+  targetJobRole JobRole?    @relation(fields: [targetJobRoleId], references: [id])
+  responses SurveyResponse[]
+
+  @@index([tenantId, assessmentId])
+  @@map("surveys")
+}
+
+model SurveyResponse {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  surveyId       String   @map("survey_id") @db.Uuid
+  // Only a non-identifying hash stored — individual identity never exposed
+  respondentHash String?  @map("respondent_hash")
+  answers        Json     // { dimension: score (1-5) }
+  submittedAt    DateTime @map("submitted_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  survey Survey @relation(fields: [surveyId], references: [id])
+
+  @@index([tenantId, surveyId])
+  @@map("survey_responses")
+}
+
+// ============================================================
+// FILES & EVIDENCE
+// ============================================================
+
+model FileRecord {
+  id           String      @id @default(uuid()) @db.Uuid
+  tenantId     String      @map("tenant_id") @db.Uuid
+  uploadedBy   String      @map("uploaded_by") @db.Uuid
+  referenceId  String      @map("reference_id") @db.Uuid
+  context      FileContext
+  originalName String      @map("original_name")
+  mimeType     String      @map("mime_type")
+  sizeBytes    Int         @map("size_bytes")
+  storageKey   String      @map("storage_key")
+  publicUrl    String?     @map("public_url")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  actionItem ActionItem? @relation(fields: [referenceId], references: [id])
+
+  @@index([tenantId, referenceId])
+  @@index([tenantId, context])
+  @@map("files")
+}
+
+// ============================================================
+// REPORTS
+// ============================================================
+
+model Report {
+  id           String       @id @default(uuid()) @db.Uuid
+  tenantId     String       @map("tenant_id") @db.Uuid
+  assessmentId String       @map("assessment_id") @db.Uuid
+  requestedBy  String       @map("requested_by") @db.Uuid
+  type         ReportType
+  format       ReportFormat
+  status       ReportStatus @default(queued)
+  fileKey      String?      @map("file_key")
+  fileUrl      String?      @map("file_url")
+  errorMessage String?      @map("error_message")
+  completedAt  DateTime?    @map("completed_at")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id])
+
+  @@index([tenantId, assessmentId])
+  @@index([tenantId, status])
+  @@map("reports")
+}
+
+// ============================================================
+// AUDIT
+// ============================================================
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  userId       String?  @map("user_id") @db.Uuid
+  userName     String?  @map("user_name")
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String?  @map("resource_id") @db.Uuid
+  metadata     Json?
+  ipAddress    String?  @map("ip_address")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, userId])
+  @@index([tenantId, resourceType, resourceId])
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+}

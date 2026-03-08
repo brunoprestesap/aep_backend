@@ -1,0 +1,121 @@
+import { AssessmentsService } from './assessments.service';
+import { CreateAssessmentDto } from './dto/create-assessment.dto';
+import { CreateActivityDto } from './dto/create-activity.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { User } from '@prisma/client';
+export declare class AssessmentsController {
+    private readonly service;
+    constructor(service: AssessmentsService);
+    create(dto: CreateAssessmentDto, user: User): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        deletedAt: Date | null;
+        title: string;
+        organizationId: string;
+        scope: string | null;
+        methodology: string | null;
+        responsibleId: string | null;
+        status: import(".prisma/client").$Enums.AssessmentStatus;
+        startedAt: Date | null;
+        completedAt: Date | null;
+    }>;
+    list(orgId: string, user: User): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        deletedAt: Date | null;
+        title: string;
+        organizationId: string;
+        scope: string | null;
+        methodology: string | null;
+        responsibleId: string | null;
+        status: import(".prisma/client").$Enums.AssessmentStatus;
+        startedAt: Date | null;
+        completedAt: Date | null;
+    }[]>;
+    get(id: string, user: User): Promise<{
+        activities: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            tenantId: string;
+            description: string | null;
+            workerCount: number | null;
+            jobRoleId: string | null;
+            workShift: string | null;
+            assessmentId: string;
+        }[];
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        deletedAt: Date | null;
+        title: string;
+        organizationId: string;
+        scope: string | null;
+        methodology: string | null;
+        responsibleId: string | null;
+        status: import(".prisma/client").$Enums.AssessmentStatus;
+        startedAt: Date | null;
+        completedAt: Date | null;
+    }>;
+    updateStatus(id: string, dto: UpdateStatusDto, user: User): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        deletedAt: Date | null;
+        title: string;
+        organizationId: string;
+        scope: string | null;
+        methodology: string | null;
+        responsibleId: string | null;
+        status: import(".prisma/client").$Enums.AssessmentStatus;
+        startedAt: Date | null;
+        completedAt: Date | null;
+    }>;
+    remove(id: string, user: User): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        deletedAt: Date | null;
+        title: string;
+        organizationId: string;
+        scope: string | null;
+        methodology: string | null;
+        responsibleId: string | null;
+        status: import(".prisma/client").$Enums.AssessmentStatus;
+        startedAt: Date | null;
+        completedAt: Date | null;
+    }>;
+    addActivity(id: string, dto: CreateActivityDto, user: User): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        description: string | null;
+        workerCount: number | null;
+        jobRoleId: string | null;
+        workShift: string | null;
+        assessmentId: string;
+    }>;
+    listActivities(id: string, user: User): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        description: string | null;
+        workerCount: number | null;
+        jobRoleId: string | null;
+        workShift: string | null;
+        assessmentId: string;
+    }[]>;
+}
