@@ -21,12 +21,12 @@ export declare class AuditService {
         id: string;
         createdAt: Date;
         tenantId: string;
-        action: string;
+        userId: string | null;
         userName: string | null;
+        action: string;
         resourceType: string;
         resourceId: string | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         ipAddress: string | null;
-        userId: string | null;
     }[]>;
 }

@@ -1,8 +1,44 @@
 import { Job } from 'bull';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { ReportingService } from '../reporting.service';
 export declare class ReportProcessor {
+    private readonly prisma;
+    private readonly reportingService;
     private readonly logger;
+    constructor(prisma: PrismaService, reportingService: ReportingService);
     handleGenerate(job: Job<{
         reportId: string;
         tenantId: string;
     }>): Promise<void>;
+    private loadAssessmentData;
+    private generatePdf;
+    private pdfSectionHeader;
+    private pdfInfoGrid;
+    private pdfTable;
+    private pdfCheckPage;
+    private pdfEmpty;
+    private riskBadge;
+    private statusBadge;
+    private categoryBadge;
+    private generateDocx;
+    private docxSectionHeading;
+    private docxInfoTable;
+    private docxStatsTable;
+    private docxDataTable;
+    private docxRiskBg;
+    private docxRiskFg;
+    private docxStatusBg;
+    private docxStatusFg;
+    private docxThinBorder;
+    private docxThinBorderWhite;
+    private distributeWidths;
+    private generateXlsx;
+    private xlsxStyleSheet;
+    private xlsxStyleDataRow;
+    private xlsxBorder;
+    private xlsxRiskArgb;
+    private xlsxRiskFgArgb;
+    private xlsxStatusArgb;
+    private xlsxStatusFgArgb;
+    private reportTypeLabel;
 }

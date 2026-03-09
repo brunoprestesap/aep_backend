@@ -12,15 +12,15 @@ export declare class SurveysController {
         };
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
+        tenantId: string;
         description: string | null;
+        title: string;
+        assessmentId: string;
         isAnonymous: boolean;
         accessToken: string;
         closesAt: Date | null;
-        assessmentId: string;
         targetJobRoleId: string | null;
     }>;
     list(assessmentId: string | undefined, user: User): Promise<({
@@ -32,15 +32,15 @@ export declare class SurveysController {
         };
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
+        tenantId: string;
         description: string | null;
+        title: string;
+        assessmentId: string;
         isAnonymous: boolean;
         accessToken: string;
         closesAt: Date | null;
-        assessmentId: string;
         targetJobRoleId: string | null;
     })[]>;
     getPublic(token: string): Promise<{
@@ -59,15 +59,15 @@ export declare class SurveysController {
         };
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
+        tenantId: string;
         description: string | null;
+        title: string;
+        assessmentId: string;
         isAnonymous: boolean;
         accessToken: string;
         closesAt: Date | null;
-        assessmentId: string;
         targetJobRoleId: string | null;
     }>;
     getResults(id: string, user: User): Promise<{

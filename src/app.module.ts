@@ -18,6 +18,7 @@ import { FilesModule } from './modules/files/files.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { UsersModule } from './modules/users/users.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { UsersModule } from './modules/users/users.module';
     ReportingModule,
     FilesModule,
     AuditModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}

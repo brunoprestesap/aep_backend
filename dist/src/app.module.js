@@ -26,6 +26,7 @@ const files_module_1 = require("./modules/files/files.module");
 const audit_module_1 = require("./modules/audit/audit.module");
 const tenants_module_1 = require("./modules/tenants/tenants.module");
 const users_module_1 = require("./modules/users/users.module");
+const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -60,6 +61,7 @@ exports.AppModule = AppModule = __decorate([
             reporting_module_1.ReportingModule,
             files_module_1.FilesModule,
             audit_module_1.AuditModule,
+            dashboard_module_1.DashboardModule,
         ],
     })
 ], AppModule);

@@ -14,11 +14,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReportingController = void 0;
 const openapi = require("@nestjs/swagger");
+const fs = require("fs");
+const path = require("path");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const reporting_service_1 = require("./reporting.service");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const UPLOADS_DIR = path.resolve(process.cwd(), 'uploads', 'reports');
+const MIME_TYPES = {
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+};
 let ReportingController = class ReportingController {
     constructor(service) {
         this.service = service;
@@ -28,6 +36,22 @@ let ReportingController = class ReportingController {
     }
     list(assessmentId, user) {
         return this.service.list(assessmentId, user.tenantId);
+    }
+    async download(id, user, res) {
+        const report = await this.service.get(id, user.tenantId);
+        if (report.status !== 'completed') {
+            throw new common_1.NotFoundException('Report file not ready yet');
+        }
+        const ext = report.format;
+        const filePath = path.join(UPLOADS_DIR, `${id}.${ext}`);
+        if (!fs.existsSync(filePath)) {
+            throw new common_1.NotFoundException('Report file not found on disk');
+        }
+        const mimeType = MIME_TYPES[report.format] ?? 'application/octet-stream';
+        const downloadName = `relatorio-${report.type}-${id.slice(0, 8)}.${ext}`;
+        res.setHeader('Content-Type', mimeType);
+        res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
+        fs.createReadStream(filePath).pipe(res);
     }
     get(id, user) {
         return this.service.get(id, user.tenantId);
@@ -52,6 +76,16 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], ReportingController.prototype, "list", null);
+__decorate([
+    (0, common_1.Get)(':id/download'),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], ReportingController.prototype, "download", null);
 __decorate([
     (0, common_1.Get)(':id'),
     openapi.ApiResponse({ status: 200 }),

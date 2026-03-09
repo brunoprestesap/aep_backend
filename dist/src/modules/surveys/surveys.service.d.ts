@@ -19,15 +19,15 @@ export declare class SurveysService {
         };
     } & {
         id: string;
-        title: string;
-        description: string | null;
-        isAnonymous: boolean;
-        accessToken: string;
-        closesAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        description: string | null;
+        title: string;
         assessmentId: string;
+        isAnonymous: boolean;
+        accessToken: string;
+        closesAt: Date | null;
         targetJobRoleId: string | null;
     }>;
     list(tenantId: string, assessmentId?: string): Promise<({
@@ -39,15 +39,15 @@ export declare class SurveysService {
         };
     } & {
         id: string;
-        title: string;
-        description: string | null;
-        isAnonymous: boolean;
-        accessToken: string;
-        closesAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        description: string | null;
+        title: string;
         assessmentId: string;
+        isAnonymous: boolean;
+        accessToken: string;
+        closesAt: Date | null;
         targetJobRoleId: string | null;
     })[]>;
     get(id: string, tenantId: string): Promise<{
@@ -59,15 +59,15 @@ export declare class SurveysService {
         };
     } & {
         id: string;
-        title: string;
-        description: string | null;
-        isAnonymous: boolean;
-        accessToken: string;
-        closesAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
         tenantId: string;
+        description: string | null;
+        title: string;
         assessmentId: string;
+        isAnonymous: boolean;
+        accessToken: string;
+        closesAt: Date | null;
         targetJobRoleId: string | null;
     }>;
     getByToken(accessToken: string): Promise<{

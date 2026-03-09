@@ -28,13 +28,13 @@ export declare class ActionPlansService {
     constructor(prisma: PrismaService);
     createPlan(dto: CreateActionPlanDto, tenantId: string): Promise<{
         id: string;
-        tenantId: string;
-        title: string;
-        objective: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        title: string;
         assessmentId: string;
         riskAssessmentId: string | null;
+        objective: string | null;
     }>;
     listPlans(assessmentId: string, tenantId: string): Promise<({
         riskAssessment: ({
@@ -45,9 +45,9 @@ export declare class ActionPlansService {
             };
         } & {
             id: string;
-            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
             assessmentId: string;
             hazardId: string;
             severity: import(".prisma/client").$Enums.RiskSeverity;
@@ -62,26 +62,26 @@ export declare class ActionPlansService {
         }) | null;
         items: {
             id: string;
-            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            actionPlanId: string;
+            tenantId: string;
+            status: import(".prisma/client").$Enums.ActionItemStatus;
+            completedAt: Date | null;
             action: string;
+            actionPlanId: string;
             responsibleName: string;
             dueDate: Date;
-            status: import(".prisma/client").$Enums.ActionItemStatus;
             successIndicators: string | null;
-            completedAt: Date | null;
         }[];
     } & {
         id: string;
-        tenantId: string;
-        title: string;
-        objective: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        title: string;
         assessmentId: string;
         riskAssessmentId: string | null;
+        objective: string | null;
     })[]>;
     getPlan(id: string, tenantId: string): Promise<{
         riskAssessment: ({
@@ -92,9 +92,9 @@ export declare class ActionPlansService {
             };
         } & {
             id: string;
-            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
             assessmentId: string;
             hazardId: string;
             severity: import(".prisma/client").$Enums.RiskSeverity;
@@ -109,97 +109,97 @@ export declare class ActionPlansService {
         }) | null;
         items: {
             id: string;
-            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            actionPlanId: string;
+            tenantId: string;
+            status: import(".prisma/client").$Enums.ActionItemStatus;
+            completedAt: Date | null;
             action: string;
+            actionPlanId: string;
             responsibleName: string;
             dueDate: Date;
-            status: import(".prisma/client").$Enums.ActionItemStatus;
             successIndicators: string | null;
-            completedAt: Date | null;
         }[];
     } & {
         id: string;
-        tenantId: string;
-        title: string;
-        objective: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        title: string;
         assessmentId: string;
         riskAssessmentId: string | null;
+        objective: string | null;
     }>;
     updatePlan(id: string, dto: UpdateActionPlanDto, tenantId: string): Promise<{
         id: string;
-        tenantId: string;
-        title: string;
-        objective: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        title: string;
         assessmentId: string;
         riskAssessmentId: string | null;
+        objective: string | null;
     }>;
     deletePlan(id: string, tenantId: string): Promise<{
         id: string;
-        tenantId: string;
-        title: string;
-        objective: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        title: string;
         assessmentId: string;
         riskAssessmentId: string | null;
+        objective: string | null;
     }>;
     addItem(planId: string, dto: CreateActionItemDto, tenantId: string): Promise<{
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        actionPlanId: string;
+        tenantId: string;
+        status: import(".prisma/client").$Enums.ActionItemStatus;
+        completedAt: Date | null;
         action: string;
+        actionPlanId: string;
         responsibleName: string;
         dueDate: Date;
-        status: import(".prisma/client").$Enums.ActionItemStatus;
         successIndicators: string | null;
-        completedAt: Date | null;
     }>;
     updateItem(planId: string, itemId: string, dto: UpdateActionItemDto, tenantId: string): Promise<{
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        actionPlanId: string;
+        tenantId: string;
+        status: import(".prisma/client").$Enums.ActionItemStatus;
+        completedAt: Date | null;
         action: string;
+        actionPlanId: string;
         responsibleName: string;
         dueDate: Date;
-        status: import(".prisma/client").$Enums.ActionItemStatus;
         successIndicators: string | null;
-        completedAt: Date | null;
     }>;
     updateItemStatus(itemId: string, status: ActionItemStatus, tenantId: string): Promise<{
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        actionPlanId: string;
+        tenantId: string;
+        status: import(".prisma/client").$Enums.ActionItemStatus;
+        completedAt: Date | null;
         action: string;
+        actionPlanId: string;
         responsibleName: string;
         dueDate: Date;
-        status: import(".prisma/client").$Enums.ActionItemStatus;
         successIndicators: string | null;
-        completedAt: Date | null;
     }>;
     deleteItem(planId: string, itemId: string, tenantId: string): Promise<{
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        actionPlanId: string;
+        tenantId: string;
+        status: import(".prisma/client").$Enums.ActionItemStatus;
+        completedAt: Date | null;
         action: string;
+        actionPlanId: string;
         responsibleName: string;
         dueDate: Date;
-        status: import(".prisma/client").$Enums.ActionItemStatus;
         successIndicators: string | null;
-        completedAt: Date | null;
     }>;
 }

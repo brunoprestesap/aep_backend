@@ -8,25 +8,27 @@ export declare class RiskEngineController {
     constructor(service: RiskEngineService);
     classify(dto: CreateRiskAssessmentDto, user: User): Promise<{
         hazard: {
-            name: string;
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
+            description: string | null;
+            category: import(".prisma/client").$Enums.HazardCategory;
             assessmentId: string;
             activityId: string | null;
             catalogId: string | null;
-            description: string | null;
-            category: import(".prisma/client").$Enums.HazardCategory;
             exposureDescription: string | null;
             exposedWorkerCount: number | null;
             existingControls: string | null;
         };
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        assessmentId: string;
+        hazardId: string;
         severity: import(".prisma/client").$Enums.RiskSeverity;
         probability: import(".prisma/client").$Enums.RiskProbability;
         riskScore: number;
@@ -36,16 +38,14 @@ export declare class RiskEngineController {
         residualScore: number | null;
         residualLevel: import(".prisma/client").$Enums.RiskLevel | null;
         justification: string | null;
-        assessmentId: string;
-        hazardId: string;
     }>;
     listByAssessment(assessmentId: string, user: User, riskLevel?: RiskLevel): Promise<({
         hazard: {
             catalog: {
-                name: string;
                 id: string;
-                tenantId: string | null;
+                name: string;
                 createdAt: Date;
+                tenantId: string | null;
                 description: string | null;
                 category: import(".prisma/client").$Enums.HazardCategory;
                 possibleConsequences: string | null;
@@ -53,16 +53,16 @@ export declare class RiskEngineController {
                 isGlobal: boolean;
             } | null;
         } & {
-            name: string;
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
+            description: string | null;
+            category: import(".prisma/client").$Enums.HazardCategory;
             assessmentId: string;
             activityId: string | null;
             catalogId: string | null;
-            description: string | null;
-            category: import(".prisma/client").$Enums.HazardCategory;
             exposureDescription: string | null;
             exposedWorkerCount: number | null;
             existingControls: string | null;
@@ -73,9 +73,11 @@ export declare class RiskEngineController {
         }[];
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        assessmentId: string;
+        hazardId: string;
         severity: import(".prisma/client").$Enums.RiskSeverity;
         probability: import(".prisma/client").$Enums.RiskProbability;
         riskScore: number;
@@ -85,29 +87,27 @@ export declare class RiskEngineController {
         residualScore: number | null;
         residualLevel: import(".prisma/client").$Enums.RiskLevel | null;
         justification: string | null;
-        assessmentId: string;
-        hazardId: string;
     })[]>;
     getSummary(assessmentId: string, user: User): Promise<Record<string, number>>;
     get(id: string, user: User): Promise<{
         hazard: {
             activity: {
-                name: string;
                 id: string;
-                tenantId: string;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                assessmentId: string;
+                tenantId: string;
                 description: string | null;
-                jobRoleId: string | null;
                 workerCount: number | null;
+                jobRoleId: string | null;
                 workShift: string | null;
+                assessmentId: string;
             } | null;
             catalog: {
-                name: string;
                 id: string;
-                tenantId: string | null;
+                name: string;
                 createdAt: Date;
+                tenantId: string | null;
                 description: string | null;
                 category: import(".prisma/client").$Enums.HazardCategory;
                 possibleConsequences: string | null;
@@ -115,35 +115,37 @@ export declare class RiskEngineController {
                 isGlobal: boolean;
             } | null;
         } & {
-            name: string;
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
+            description: string | null;
+            category: import(".prisma/client").$Enums.HazardCategory;
             assessmentId: string;
             activityId: string | null;
             catalogId: string | null;
-            description: string | null;
-            category: import(".prisma/client").$Enums.HazardCategory;
             exposureDescription: string | null;
             exposedWorkerCount: number | null;
             existingControls: string | null;
         };
         actionPlans: {
             id: string;
-            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
+            title: string;
             assessmentId: string;
             riskAssessmentId: string | null;
-            title: string;
             objective: string | null;
         }[];
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        assessmentId: string;
+        hazardId: string;
         severity: import(".prisma/client").$Enums.RiskSeverity;
         probability: import(".prisma/client").$Enums.RiskProbability;
         riskScore: number;
@@ -153,30 +155,30 @@ export declare class RiskEngineController {
         residualScore: number | null;
         residualLevel: import(".prisma/client").$Enums.RiskLevel | null;
         justification: string | null;
-        assessmentId: string;
-        hazardId: string;
     }>;
     update(id: string, dto: UpdateRiskAssessmentDto, user: User): Promise<{
         hazard: {
-            name: string;
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
+            description: string | null;
+            category: import(".prisma/client").$Enums.HazardCategory;
             assessmentId: string;
             activityId: string | null;
             catalogId: string | null;
-            description: string | null;
-            category: import(".prisma/client").$Enums.HazardCategory;
             exposureDescription: string | null;
             exposedWorkerCount: number | null;
             existingControls: string | null;
         };
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        assessmentId: string;
+        hazardId: string;
         severity: import(".prisma/client").$Enums.RiskSeverity;
         probability: import(".prisma/client").$Enums.RiskProbability;
         riskScore: number;
@@ -186,30 +188,30 @@ export declare class RiskEngineController {
         residualScore: number | null;
         residualLevel: import(".prisma/client").$Enums.RiskLevel | null;
         justification: string | null;
-        assessmentId: string;
-        hazardId: string;
     }>;
     updateResidual(id: string, dto: UpdateResidualRiskDto, user: User): Promise<{
         hazard: {
-            name: string;
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
+            description: string | null;
+            category: import(".prisma/client").$Enums.HazardCategory;
             assessmentId: string;
             activityId: string | null;
             catalogId: string | null;
-            description: string | null;
-            category: import(".prisma/client").$Enums.HazardCategory;
             exposureDescription: string | null;
             exposedWorkerCount: number | null;
             existingControls: string | null;
         };
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        assessmentId: string;
+        hazardId: string;
         severity: import(".prisma/client").$Enums.RiskSeverity;
         probability: import(".prisma/client").$Enums.RiskProbability;
         riskScore: number;
@@ -219,8 +221,6 @@ export declare class RiskEngineController {
         residualScore: number | null;
         residualLevel: import(".prisma/client").$Enums.RiskLevel | null;
         justification: string | null;
-        assessmentId: string;
-        hazardId: string;
     }>;
     remove(id: string, user: User): Promise<void>;
 }
